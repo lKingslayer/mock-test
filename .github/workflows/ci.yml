@@ -1,0 +1,87 @@
+name: CI — Stateless KB Smoke
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.11"
+      BASE_URL: "http://127.0.0.1:8000"
+      # Deterministic salt seed per run; adjust if you prefer time-based:
+      CI_RUN_SEED: ${{ github.run_number }}
+      # Make sure some succeed and some fail (deterministically) at >=1000 ms
+      FAILURE_RATE: "0.30"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate fixtures (exactly 10 files)
+        run: |
+          set -euo pipefail
+          python tools/fixtures.py
+
+      - name: Start server (background)
+        run: |
+          set -euo pipefail
+          nohup uvicorn app.main:app --port 8000 > server.log 2>&1 &
+          echo $! > server.pid
+          # Optional: show first few lines while it warms up
+          sleep 1
+          tail -n +1 -v server.log || true
+
+      - name: Run smoke runner
+        id: smoke
+        env:
+          # Pass-through so runner sees these via the server
+          BASE_URL: ${{ env.BASE_URL }}
+          CI_RUN_SEED: ${{ env.CI_RUN_SEED }}
+          FAILURE_RATE: ${{ env.FAILURE_RATE }}
+        run: |
+          set -euo pipefail
+          # The runner itself waits for /health and will time out after 30s by default
+          python -m runner.smoke --base-url "${BASE_URL}" --fixtures ./fixtures --timeout 30 --poll 0.25 2>&1 | tee runner.log
+
+      - name: Stop server
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) 2>/dev/null || true
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-logs-${{ github.run_id }}
+          path: |
+            server.log
+            runner.log
+          if-no-files-found: warn
+# Manual CI trigger
