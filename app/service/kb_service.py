@@ -7,10 +7,10 @@ from uuid import uuid4
 from ..domain.paths import normalize_resource_path
 from ..domain.status import Status, compute_status
 from ..domain.tokens import (
+    TokenError,
     decode_resource_token,
     encode_resource_token,
     get_seed_from_env,
-    TokenError,
 )
 from ..logging_conf import get_logger
 
