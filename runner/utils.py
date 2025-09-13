@@ -5,6 +5,14 @@ from pathlib import Path
 from app.domain.paths import extension
 from runner.types import Uploaded
 
+"""Utility helpers for the smoke runner.
+
+Contains small, testable functions used across the orchestration:
+- percentile: math helper for p95/avg calculations
+- validate_and_collect_fixtures: ensure we have exactly N fixture files
+- summarize: turn raw poll results into a compact report + exit code
+"""
+
 
 def percentile(values: list[float], p: float) -> float:
     """Compute the p-th percentile using linear interpolation."""

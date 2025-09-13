@@ -39,7 +39,10 @@ def get_failure_rate_from_env() -> float:
 # ------------------------
 
 def create_kb(*, name: str | None = None, description: str | None = None) -> dict:
-    """Create a new knowledge base descriptor."""
+    """Create a new knowledge base descriptor.
+
+    Stateless implementation: just mint an id and timestamp and echo back inputs.
+    """
     kb_id = str(uuid4())
     created_at = now_ms()
     logger.info("kb.create", extra={"event": "kb_create", "kb_id": kb_id})
@@ -52,7 +55,11 @@ def create_kb(*, name: str | None = None, description: str | None = None) -> dic
 
 
 def upload_resource(*, kb_id: str, resource_path: str) -> dict:
-    """Accept a resource path and return an initial pending resource."""
+    """Accept a resource path and return an initial pending resource.
+
+    The content is ignored by design; we return a token that encodes the path
+    and creation time so the client can deterministically replay status.
+    """
     created_at = now_ms()
     seed = get_seed_from_env()
     rp = normalize_resource_path(resource_path)
@@ -75,7 +82,11 @@ def upload_resource(*, kb_id: str, resource_path: str) -> dict:
 
 
 def list_children(*, kb_id: str, ids: list[str]) -> list[dict]:
-    """Return statuses for the provided resource ids within a KB."""
+    """Return statuses for the provided resource ids within a KB.
+
+    For each token we either decode and compute a status or return an error
+    envelope describing why the token is invalid for this KB.
+    """
     if not ids:
         raise ValueError("missing_ids")
 

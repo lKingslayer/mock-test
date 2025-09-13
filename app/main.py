@@ -33,6 +33,12 @@ def create_app() -> FastAPI:
 
     @app.middleware("http")
     async def request_logger(request: Request, call_next: Callable[[Request], Response]):
+        """Minimal JSON request logging with correlation id.
+
+        - If the client sends X-Request-ID we propagate it; otherwise we mint one
+        - Logs a start and end event with method/path/status/elapsed_ms
+        - Attaches X-Request-ID header on the response for easy tracing
+        """
         # Reuse incoming X-Request-ID if present; else mint a new one.
         request_id = request.headers.get("X-Request-ID", str(uuid4()))
         request.state.request_id = request_id

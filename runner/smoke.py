@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+"""High-level smoke runner orchestrating the end-to-end flow.
+
+Steps:
+- wait for server health
+- create a KB
+- upload all fixtures concurrently (tolerates per-file failures)
+- poll statuses until all successful uploads are terminal or timeout
+- emit a compact summary and exit code
+"""
 from __future__ import annotations
 
 import asyncio

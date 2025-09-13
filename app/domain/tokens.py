@@ -7,7 +7,7 @@ import os
 
 from pydantic import BaseModel, Field, ValidationError
 
-from .paths import normalize_resource_path
+from app.domain.paths import normalize_resource_path
 
 __all__ = [
     "TOKEN_VERSION",
@@ -52,7 +52,8 @@ class MalformedTokenError(TokenError):
 class TokenPayload(BaseModel):
     """Opaque-but-decodable token payload for a single uploaded resource.
 
-    Fields are deliberately short to keep tokens compact when base64-encoded.
+    Short field names keep the URL-safe base64 token compact. The token lets the
+    server remain stateless while allowing the client to query progress later.
     """
 
     ver: int = Field(..., ge=1, le=1)  # token schema version
