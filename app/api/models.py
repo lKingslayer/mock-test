@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -8,11 +8,13 @@ from ..domain.status import Status
 
 
 class KBCreateRequest(BaseModel):
+    """Optional inputs for creating a knowledge base."""
     name: Optional[str] = None
     description: Optional[str] = None
 
 
 class KBCreateResponse(BaseModel):
+    """Representation of a created knowledge base."""
     knowledge_base_id: str
     name: Optional[str] = None
     description: Optional[str] = None
@@ -20,6 +22,7 @@ class KBCreateResponse(BaseModel):
 
 
 class ResourceUploadResponse(BaseModel):
+    """Response describing an accepted resource upload request."""
     resource_id: str
     resource_path: str
     status: Status
@@ -27,6 +30,7 @@ class ResourceUploadResponse(BaseModel):
 
 
 class ChildStatus(BaseModel):
+    """Current state of a single resource within a knowledge base."""
     resource_id: str
     resource_path: str
     status: Status
@@ -36,4 +40,5 @@ class ChildStatus(BaseModel):
 
 
 class MonitorChildrenResponse(BaseModel):
-    items: List[ChildStatus]
+    """Statuses for a batch of resources."""
+    items: list[ChildStatus]

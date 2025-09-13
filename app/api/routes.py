@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+ 
 
 from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
 
@@ -20,6 +20,7 @@ logger = get_logger("api")
 
 @router.post("/knowledge_bases", response_model=KBCreateResponse, summary="Create a knowledge base (stateless)")
 async def create_kb(req: KBCreateRequest | None = None) -> KBCreateResponse:
+    """Create and return a new knowledge base descriptor."""
     req = req or KBCreateRequest()
     out = kb_service.create_kb(name=req.name, description=req.description)
     return KBCreateResponse(**out)
@@ -36,6 +37,7 @@ async def upload_resource(
     resource_path: str = Form(...),
     file: UploadFile = File(...),  # content ignored by design (stateless)
 ) -> ResourceUploadResponse:
+    """Accept a file upload request and return a pending resource."""
     if resource_type.lower() != "file":
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -58,8 +60,9 @@ async def upload_resource(
 )
 async def monitor_children(
     kb_id: str,
-    ids: List[str] = Query(..., description="Repeat ?ids=token. Also supports a single comma-separated string."),
+    ids: list[str] = Query(..., description="Repeat ?ids=token. Also supports a single comma-separated string."),
 ) -> MonitorChildrenResponse:
+    """Return the current statuses for the provided resource ids."""
     # Accept either repeated ?ids=..&ids=.. or a single comma-separated string
     if len(ids) == 1 and ("," in ids[0]):
         ids = [tok.strip() for tok in ids[0].split(",") if tok.strip()]
@@ -81,4 +84,5 @@ async def monitor_children(
     summary="Delete a knowledge base (no-op)",
 )
 async def delete_kb(kb_id: str):
+    """Delete a knowledge base (no-op in this stateless service)."""
     kb_service.delete_kb(kb_id=kb_id)

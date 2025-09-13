@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import List, Optional
+from typing import Optional
 from uuid import uuid4
 
 from ..logging_conf import get_logger
@@ -19,15 +19,12 @@ logger = get_logger("service.kb")
 
 
 def now_ms() -> int:
-    """Epoch milliseconds."""
+    """Return current time in epoch milliseconds."""
     return int(time.time() * 1000)
 
 
 def get_failure_rate_from_env() -> float:
-    """Read FAILURE_RATE from env; default 0.3.
-
-    Validates that the value lies in [0,1].
-    """
+    """Return FAILURE_RATE from environment, defaulting to 0.3."""
     raw = os.getenv("FAILURE_RATE", "0.3")
     try:
         val = float(raw)
@@ -43,6 +40,7 @@ def get_failure_rate_from_env() -> float:
 # ------------------------
 
 def create_kb(*, name: Optional[str] = None, description: Optional[str] = None) -> dict:
+    """Create a new knowledge base descriptor."""
     kb_id = str(uuid4())
     created_at = now_ms()
     logger.info("kb.create", extra={"event": "kb_create", "kb_id": kb_id})
@@ -55,6 +53,7 @@ def create_kb(*, name: Optional[str] = None, description: Optional[str] = None) 
 
 
 def upload_resource(*, kb_id: str, resource_path: str) -> dict:
+    """Accept a resource path and return an initial pending resource."""
     created_at = now_ms()
     seed = get_seed_from_env()
     rp = normalize_resource_path(resource_path)
@@ -71,13 +70,14 @@ def upload_resource(*, kb_id: str, resource_path: str) -> dict:
     }
 
 
-def list_children(*, kb_id: str, ids: List[str]) -> List[dict]:
+def list_children(*, kb_id: str, ids: list[str]) -> list[dict]:
+    """Return statuses for the provided resource ids within a KB."""
     if not ids:
         raise ValueError("missing_ids")
 
     failure_rate = get_failure_rate_from_env()
     now = now_ms()
-    out: List[dict] = []
+    out: list[dict] = []
 
     for tok in ids:
         try:
@@ -131,5 +131,6 @@ def list_children(*, kb_id: str, ids: List[str]) -> List[dict]:
 
 
 def delete_kb(*, kb_id: str) -> None:
+    """Record a delete request for a knowledge base (no-op)."""
     logger.info("kb.delete", extra={"event": "kb_delete", "kb_id": kb_id})
     return None

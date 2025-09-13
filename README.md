@@ -121,6 +121,42 @@ mock_task/
 └── README.md              # This file
 ```
 
+## Mermaid Diagram 
+
+```mermaid
+flowchart TD
+  subgraph Client
+    C1[CLI / curl / runner]
+  end
+
+  subgraph API[FastAPI app]
+    R1[POST /knowledge_bases]
+    R2[POST /knowledge_bases/{kb}/resources]
+    R3[GET /knowledge_bases/{kb}/resources/children]
+    R4[DELETE /knowledge_bases/{kb}]
+    H[/GET /health/]
+  end
+
+  subgraph Service
+    S1[kb_service.create_kb]
+    S2[kb_service.upload_resource]
+    S3[kb_service.list_children]
+  end
+
+  subgraph Domain
+    D1[paths.normalize_resource_path]
+    D2[tokens.encode/decode_resource_token]
+    D3[status.compute_status]
+  end
+
+  C1 -->|HTTP JSON| API
+  R1 --> S1 -->|returns kb_id| C1
+  R2 --> S2 --> D1 --> D2 -->|returns token| C1
+  R3 --> S3 --> D2 --> D3 -->|returns statuses| C1
+  R4 --> S1
+  H --> C1
+```
+
 ## Testing
 
 ### Basic Test
