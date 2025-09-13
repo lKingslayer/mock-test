@@ -131,9 +131,9 @@ flowchart TD
 
   subgraph API[FastAPI app]
     R1[POST /knowledge_bases]
-    R2[POST /knowledge_bases/{kb}/resources]
-    R3[GET /knowledge_bases/{kb}/resources/children]
-    R4[DELETE /knowledge_bases/{kb}]
+    R2[POST /knowledge_bases/:kb/resources]
+    R3[GET /knowledge_bases/:kb/resources/children]
+    R4[DELETE /knowledge_bases/:kb]
     H[/GET /health/]
   end
 
