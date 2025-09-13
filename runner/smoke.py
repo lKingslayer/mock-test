@@ -9,13 +9,12 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
- 
 
 import httpx
 
 # Reuse the same JSON logging as the server for consistent artifacts
 try:
-    from app.logging_conf import setup_logging, get_logger
+    from app.logging_conf import get_logger, setup_logging
 except Exception:  # pragma: no cover
     # Minimal fallback if project imports aren't available
     import logging
@@ -27,7 +26,6 @@ except Exception:  # pragma: no cover
         return logging.getLogger(name or __name__)
 
 from app.domain.paths import extension, normalize_resource_path
-
 
 setup_logging()
 logger = get_logger("runner")

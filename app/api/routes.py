@@ -1,7 +1,5 @@
 from __future__ import annotations
 
- 
-
 from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
 
 from ..logging_conf import get_logger

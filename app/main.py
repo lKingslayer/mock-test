@@ -9,8 +9,8 @@ from uuid import uuid4
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
-from .logging_conf import get_logger, setup_logging
 from .api import router as api_router
+from .logging_conf import get_logger, setup_logging
 
 # Configure logging before anything else.
 setup_logging()
