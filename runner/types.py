@@ -22,3 +22,15 @@ def now_ms() -> int:
     return int(time.time() * 1000)
 
 
+class CreateKBError(SmokeError):
+    """Raised when creating a knowledge base fails after retries."""
+
+
+class UploadError(SmokeError):
+    """Raised when uploading a single file fails after retries."""
+
+
+class PollError(SmokeError):
+    """Raised when polling children fails repeatedly."""
+
+
