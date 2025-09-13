@@ -1,7 +1,12 @@
 from time import time
+
 from app.domain.paths import normalize_resource_path
-from app.domain.tokens import encode_resource_token, decode_resource_token, get_seed_from_env
 from app.domain.status import compute_status
+from app.domain.tokens import (
+    decode_resource_token,
+    encode_resource_token,
+    get_seed_from_env,
+)
 
 seed = get_seed_from_env()  # 0 if unset
 kb_id = "kb_123"
@@ -14,5 +19,15 @@ payload = decode_resource_token(tok)
 
 # Status evolution
 compute_status(created_at_ms=now_ms, now_ms=now_ms, salt=payload.salt, failure_rate=0.3)  # pending
-compute_status(created_at_ms=now_ms, now_ms=now_ms+350, salt=payload.salt, failure_rate=0.3)  # parsed
-compute_status(created_at_ms=now_ms, now_ms=now_ms+1200, salt=payload.salt, failure_rate=0.3)  # indexed|error
+compute_status(
+    created_at_ms=now_ms,
+    now_ms=now_ms + 350,
+    salt=payload.salt,
+    failure_rate=0.3,
+)  # parsed
+compute_status(
+    created_at_ms=now_ms,
+    now_ms=now_ms + 1200,
+    salt=payload.salt,
+    failure_rate=0.3,
+)  # indexed|error

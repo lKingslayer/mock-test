@@ -18,7 +18,11 @@ router = APIRouter()
 logger = get_logger("api")
 
 
-@router.post("/knowledge_bases", response_model=KBCreateResponse, summary="Create a knowledge base (stateless)")
+@router.post(
+    "/knowledge_bases",
+    response_model=KBCreateResponse,
+    summary="Create a knowledge base (stateless)",
+)
 async def create_kb(req: KBCreateRequest | None = None) -> KBCreateResponse:
     """Create and return a new knowledge base descriptor."""
     req = req or KBCreateRequest()
@@ -41,7 +45,10 @@ async def upload_resource(
     if resource_type.lower() != "file":
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"error_code": "malformed_request", "error_message": 'resource_type must be "file"'},
+            detail={
+                "error_code": "malformed_request",
+                "error_message": 'resource_type must be "file"',
+            },
         )
     try:
         out = kb_service.upload_resource(kb_id=kb_id, resource_path=resource_path)
@@ -60,7 +67,9 @@ async def upload_resource(
 )
 async def monitor_children(
     kb_id: str,
-    ids: list[str] = Query(..., description="Repeat ?ids=token. Also supports a single comma-separated string."),
+    ids: list[str] = Query(
+        ..., description="Repeat ?ids=token. Also supports a single comma-separated string."
+    ),
 ) -> MonitorChildrenResponse:
     """Return the current statuses for the provided resource ids."""
     # Accept either repeated ?ids=..&ids=.. or a single comma-separated string
@@ -72,7 +81,10 @@ async def monitor_children(
         if str(e) == "missing_ids":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"error_code": "missing_ids", "error_message": "At least one id must be provided"},
+                detail={
+                    "error_code": "missing_ids",
+                    "error_message": "At least one id must be provided",
+                },
             )
         raise
     return MonitorChildrenResponse(items=[ChildStatus(**it) for it in items])

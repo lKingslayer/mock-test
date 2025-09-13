@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+ 
 
 from pydantic import BaseModel
 
@@ -9,15 +9,15 @@ from ..domain.status import Status
 
 class KBCreateRequest(BaseModel):
     """Optional inputs for creating a knowledge base."""
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
 
 
 class KBCreateResponse(BaseModel):
     """Representation of a created knowledge base."""
     knowledge_base_id: str
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
     created_at: int
 
 
@@ -35,8 +35,8 @@ class ChildStatus(BaseModel):
     resource_path: str
     status: Status
     updated_at: int
-    error_code: Optional[str] = None
-    error_message: Optional[str] = None
+    error_code: str | None = None
+    error_message: str | None = None
 
 
 class MonitorChildrenResponse(BaseModel):

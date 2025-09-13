@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Callable
+from collections.abc import Callable
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Response

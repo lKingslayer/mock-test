@@ -39,7 +39,7 @@ def get_failure_rate_from_env() -> float:
 # Use-cases
 # ------------------------
 
-def create_kb(*, name: Optional[str] = None, description: Optional[str] = None) -> dict:
+def create_kb(*, name: str | None = None, description: str | None = None) -> dict:
     """Create a new knowledge base descriptor."""
     kb_id = str(uuid4())
     created_at = now_ms()
@@ -57,7 +57,12 @@ def upload_resource(*, kb_id: str, resource_path: str) -> dict:
     created_at = now_ms()
     seed = get_seed_from_env()
     rp = normalize_resource_path(resource_path)
-    token = encode_resource_token(kb_id=kb_id, resource_path=rp, created_at_ms=created_at, seed=seed)
+    token = encode_resource_token(
+        kb_id=kb_id,
+        resource_path=rp,
+        created_at_ms=created_at,
+        seed=seed,
+    )
     logger.info(
         "resource.upload",
         extra={"event": "resource_upload", "kb_id": kb_id, "resource_path": rp},

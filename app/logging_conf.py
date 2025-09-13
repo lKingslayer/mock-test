@@ -9,10 +9,9 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from logging import Handler, LogRecord
-from typing import Any, Dict
-
+from typing import Any
 
 _DEFAULT_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -27,8 +26,8 @@ class JsonFormatter(logging.Formatter):
 
     def format(self, record: LogRecord) -> str:  # type: ignore[override]
         # Base event structure
-        payload: Dict[str, Any] = {
-            "ts": datetime.now(timezone.utc).isoformat(timespec="milliseconds"),
+        payload: dict[str, Any] = {
+            "ts": datetime.now(UTC).isoformat(timespec="milliseconds"),
             "level": record.levelname,
             "logger": record.name,
         }

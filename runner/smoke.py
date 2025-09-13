@@ -3,14 +3,13 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import logging
 import os
 import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+ 
 
 import httpx
 
@@ -87,7 +86,11 @@ async def upload_one(client: httpx.AsyncClient, kb_id: str, path: Path) -> Uploa
     r = await client.post(f"/knowledge_bases/{kb_id}/resources", files=files)
     r.raise_for_status()
     data = r.json()
-    return Uploaded(token=data["resource_id"], path=data["resource_path"], created_at_ms=data["created_at"])
+    return Uploaded(
+        token=data["resource_id"],
+        path=data["resource_path"],
+        created_at_ms=data["created_at"],
+    )
 
 
 async def upload_all(base_url: str, kb_id: str, files: list[Path]) -> list[Uploaded]:
@@ -182,10 +185,20 @@ def _summarize(
             failure += 1
             per_ext[ext]["error"] += 1
             failures_detail.append(
-                {"path": u.path, "error_code": it.get("error_code"), "error_message": it.get("error_message")}
+                {
+                    "path": u.path,
+                    "error_code": it.get("error_code"),
+                    "error_message": it.get("error_message"),
+                }
             )
         else:
-            failures_detail.append({"path": u.path, "error_code": "timeout", "error_message": "not terminal"})
+            failures_detail.append(
+                {
+                    "path": u.path,
+                    "error_code": "timeout",
+                    "error_message": "not terminal",
+                }
+            )
 
     avg_ms = (sum(durations_ms) / len(durations_ms)) if durations_ms else 0.0
     p95_ms = _percentile(durations_ms, 0.95)
@@ -196,7 +209,11 @@ def _summarize(
         "uploaded": len(uploaded),
         "indexed_count": success,
         "error_count": failure,
-        "timings": {"avg_ms": round(avg_ms, 2), "p95_ms": round(p95_ms, 2), "max_ms": round(max_ms, 2)},
+        "timings": {
+            "avg_ms": round(avg_ms, 2),
+            "p95_ms": round(p95_ms, 2),
+            "max_ms": round(max_ms, 2),
+        },
         "per_extension": per_ext,
         "failures": failures_detail,
     }
@@ -236,7 +253,9 @@ async def run_smoke(
     )
 
     # 6) compute summary and decide exit code
-    summary, exit_code = _summarize(uploaded=uploaded, last_items=last_items, terminal_at=terminal_at)
+    summary, exit_code = _summarize(
+        uploaded=uploaded, last_items=last_items, terminal_at=terminal_at
+    )
     logger.info("runner.summary", extra=summary)
     return exit_code
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from pathlib import Path
 import base64
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FX = ROOT / "fixtures"
@@ -50,7 +50,7 @@ def main() -> None:
     for c in created:
         print(" -", c)
     if len(created) != 10:
-        raise SystemExit("Expected 10 fixtures, found %d" % len(created))
+        raise SystemExit(f"Expected 10 fixtures, found {len(created)}")
 
 
 if __name__ == "__main__":

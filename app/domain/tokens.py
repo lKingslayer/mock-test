@@ -4,7 +4,7 @@ import base64
 import hashlib
 import json
 import os
-from typing import Any
+ 
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -14,8 +14,8 @@ __all__ = [
     "TOKEN_VERSION",
     "TokenPayload",
     "TokenError",
-    "UnsupportedTokenVersion",
-    "MalformedToken",
+    "UnsupportedTokenVersionError",
+    "MalformedTokenError",
     "derive_salt",
     "get_seed_from_env",
     "encode_resource_token",
@@ -39,11 +39,11 @@ class TokenError(ValueError):
     code: str = "invalid_token"
 
 
-class UnsupportedTokenVersion(TokenError):
+class UnsupportedTokenVersionError(TokenError):
     code = "unsupported_token_version"
 
 
-class MalformedToken(TokenError):
+class MalformedTokenError(TokenError):
     code = "malformed_token"
 
 
@@ -81,7 +81,7 @@ def _hash64(data: bytes) -> int:
 
 def derive_salt(seed: int, kb_id: str, resource_path: str) -> int:
     """Derive a deterministic 64-bit salt from seed, kb_id, and resource path."""
-    payload = f"{seed}|{kb_id}|{resource_path}".encode("utf-8")
+    payload = f"{seed}|{kb_id}|{resource_path}".encode()
     return _hash64(payload) & _UINT64_MAX
 
 
@@ -125,23 +125,23 @@ def decode_resource_token(token: str) -> TokenPayload:
     try:
         raw = base64.urlsafe_b64decode(token.encode("ascii"))
     except Exception as e:  # pragma: no cover
-        raise MalformedToken("Token is not valid base64url") from e
+        raise MalformedTokenError("Token is not valid base64url") from e
 
     try:
         data = json.loads(raw.decode("utf-8"))
     except Exception as e:  # pragma: no cover
-        raise MalformedToken("Token JSON is malformed") from e
+        raise MalformedTokenError("Token JSON is malformed") from e
 
     try:
         payload = TokenPayload(**data)
     except ValidationError as e:
-        raise MalformedToken(f"Token schema invalid: {e}") from e
+        raise MalformedTokenError(f"Token schema invalid: {e}") from e
 
     if payload.ver != TOKEN_VERSION:
-        raise UnsupportedTokenVersion(f"Unsupported token version: {payload.ver}")
+        raise UnsupportedTokenVersionError(f"Unsupported token version: {payload.ver}")
 
     # Ensure resource path was (and still is) normalized
     if payload.rp != normalize_resource_path(payload.rp):
-        raise MalformedToken("Token resource path is not normalized")
+        raise MalformedTokenError("Token resource path is not normalized")
 
     return payload

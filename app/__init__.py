@@ -3,7 +3,7 @@
 Keeps the package importable and is a good place to expose top-level metadata
 if you want (e.g., __version__). For now, we keep it minimal.
 """
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError, version
 
 try:  # If you later package this, __version__ will resolve; else default.
     __version__ = version("kb_indexer_stateless")

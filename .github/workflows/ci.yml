@@ -41,6 +41,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Lint (ruff)
+        run: |
+          set -euo pipefail
+          ruff --version
+          ruff check .
+
       - name: Generate fixtures (exactly 10 files)
         run: |
           set -euo pipefail
