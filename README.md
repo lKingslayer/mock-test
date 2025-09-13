@@ -9,7 +9,9 @@ A FastAPI-based knowledge base management system that allows you to create knowl
 - **Status Monitoring**: Track resource processing status (pending → parsed → indexed/error)
 - **Deterministic Processing**: Predictable status evolution based on deterministic algorithms
 - **Comprehensive Testing**: Automated smoke tests with fixture generation
-- **CI/CD Pipeline**: GitHub Actions workflow for automated testing
+- **Retries & Resilience**: Runner tolerates per-file upload failures and retries transient errors
+- **Structured JSON Logs**: Consistent logging for both server and runner
+- **CI/CD Pipeline**: GitHub Actions workflow for lint + smoke testing
 - **Multiple File Formats**: Support for DOCX, PDF, PPTX, XLSX, TXT, MD, CSV, HTML, JSON, PNG
 
 ## Quick Start
@@ -110,8 +112,12 @@ mock_task/
 │   ├── html/page.html
 │   ├── json/config.json
 │   └── img/pixel.png
-├── runner/                 # Test runner
-│   └── smoke.py           # Comprehensive smoke test suite
+├── runner/                 # Test runner (modular)
+│   ├── cli.py             # CLI arg parsing
+│   ├── client.py          # HTTP calls with retries and logging
+│   ├── types.py           # Dataclasses and custom exceptions
+│   ├── utils.py           # Small helpers (percentiles, summaries)
+│   └── smoke.py           # Orchestrates the end-to-end flow
 ├── tools/                  # Utility scripts
 │   └── fixtures.py         # Generate test fixtures
 ├── .github/workflows/      # CI/CD
@@ -124,38 +130,42 @@ mock_task/
 ## Mermaid Diagram 
 
 ```mermaid
-flowchart TD
-  subgraph Client
-    C1[CLI / curl / runner]
+flowchart LR
+  %% Layout: left-to-right for readability
+
+  subgraph Client[Client]
+    CLI[CLI / curl / runner]
   end
 
-  subgraph API[FastAPI app]
+  subgraph API[FastAPI App]
+    H[/GET /health/]
     R1[POST /knowledge_bases]
     R2[POST /knowledge_bases/:kb/resources]
     R3[GET /knowledge_bases/:kb/resources/children]
     R4[DELETE /knowledge_bases/:kb]
-    H[/GET /health/]
   end
 
-  subgraph Service
+  subgraph Service[Service Layer]
     S1[kb_service.create_kb]
     S2[kb_service.upload_resource]
     S3[kb_service.list_children]
   end
 
-  subgraph Domain
+  subgraph Domain[Domain Utilities]
     D1[paths.normalize_resource_path]
     D2[tokens.encode/decode_resource_token]
     D3[status.compute_status]
   end
 
-  C1 -->|HTTP JSON| API
-  R1 --> S1 -->|returns kb_id| C1
-  R2 --> S2 --> D1 --> D2 -->|returns token| C1
-  R3 --> S3 --> D2 --> D3 -->|returns statuses| C1
-  R4 --> S1
-  H --> C1
+  %% Flows
+  CLI -->|HTTP JSON| H
+  CLI --> R1 --> S1 -->|kb_id| CLI
+  CLI --> R2 --> S2 --> D1 --> D2 -->|resource token| CLI
+  CLI --> R3 --> S3 --> D2 --> D3 -->|statuses| CLI
+  CLI --> R4 --> S1
 ```
+
+Tip: Paste the Mermaid block into Mermaid Live (`https://mermaid.live`) or Excalidraw (`https://excalidraw.com`) to tweak spacing, colors, and export as SVG/PNG.
 
 ## Testing
 
@@ -172,7 +182,7 @@ This will demonstrate:
 - Token encoding/decoding
 - Status evolution simulation
 
-### Comprehensive Smoke Test
+### Comprehensive Smoke Test (resilient)
 
 Run the full smoke test suite that uploads all fixture files and monitors their processing:
 
@@ -182,10 +192,10 @@ python -m runner.smoke --base-url http://127.0.0.1:8000
 
 This comprehensive test:
 - Creates a knowledge base
-- Uploads 10 different file formats
+- Uploads 10 different file formats (continues even if some fail)
+- Retries transient errors during create/upload/poll
 - Monitors processing status
-- Reports success/failure statistics
-- Shows processing times and performance metrics
+- Reports success/failure statistics and timing percentiles
 
 ### Expected Results
 
@@ -212,6 +222,7 @@ The project uses:
 
 - `CI_RUN_SEED`: Seed for deterministic behavior (default: 0)
 - `FAILURE_RATE`: Rate of deterministic failures (default: 0.30)
+- `LOG_LEVEL`: Server/runner log level (default: INFO)
 
 ## CI/CD
 
