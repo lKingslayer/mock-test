@@ -3,14 +3,14 @@ from __future__ import annotations
 
 import asyncio
 import sys
+import time
 from pathlib import Path
 
 from app.logging_conf import get_logger, setup_logging
 from runner.cli import parse_args
 from runner.client import create_kb, poll_children, upload_all, wait_for_health
-from runner.types import Uploaded
+from runner.types import Uploaded, now_ms
 from runner.utils import summarize, validate_and_collect_fixtures
-
 
 setup_logging()
 logger = get_logger("runner")
@@ -19,19 +19,15 @@ logger = get_logger("runner")
 async def _poll_until_terminal(
     *, base_url: str, kb_id: str, tokens: list[str], poll_interval_s: float, timeout_s: float
 ) -> tuple[list[dict], dict[str, int]]:
-    import asyncio as _asyncio
-    import time as _time
-    from runner.types import now_ms as _now_ms
-
-    started = _time.monotonic()
+    started = time.monotonic()
     terminal_at: dict[str, int] = {}
     last_items: list[dict] = []
     while True:
-        if _time.monotonic() - started > timeout_s:
+        if time.monotonic() - started > timeout_s:
             break
         items = await poll_children(base_url, kb_id, tokens)
         last_items = items
-        now = _now_ms()
+        now = now_ms()
         for it in items:
             status = it.get("status")
             rid = it["resource_id"]
@@ -39,7 +35,7 @@ async def _poll_until_terminal(
                 terminal_at[rid] = int(it.get("updated_at", now))
         if len(terminal_at) == len(tokens):
             break
-        await _asyncio.sleep(poll_interval_s)
+        await asyncio.sleep(poll_interval_s)
     return last_items, terminal_at
 
 
