@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+ 
+
 from pydantic import BaseModel
 
-from ..domain.status import Status
+from app.domain.status import Status
 
 
 class KBCreateRequest(BaseModel):
