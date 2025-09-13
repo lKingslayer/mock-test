@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
 
 from app.domain.paths import extension
-from runner.types import Uploaded, now_ms
+from runner.types import Uploaded
 
 
 def percentile(values: list[float], p: float) -> float:
@@ -34,7 +33,9 @@ def validate_and_collect_fixtures(fixtures_dir: Path, expected: int = 10) -> lis
     return all_files
 
 
-def summarize(uploaded: list[Uploaded], last_items: list[dict], terminal_at: dict[str, int]) -> tuple[dict, int]:
+def summarize(
+    uploaded: list[Uploaded], last_items: list[dict], terminal_at: dict[str, int]
+) -> tuple[dict, int]:
     """Compute summary dict and an exit code from final states."""
     durations_ms: list[float] = []
     success = 0
@@ -57,9 +58,17 @@ def summarize(uploaded: list[Uploaded], last_items: list[dict], terminal_at: dic
         elif status == "error":
             failure += 1
             per_ext[ext]["error"] += 1
-            failures_detail.append({"path": u.path, "error_code": it.get("error_code"), "error_message": it.get("error_message")})
+            failures_detail.append(
+                {
+                    "path": u.path,
+                    "error_code": it.get("error_code"),
+                    "error_message": it.get("error_message"),
+                }
+            )
         else:
-            failures_detail.append({"path": u.path, "error_code": "timeout", "error_message": "not terminal"})
+            failures_detail.append(
+                {"path": u.path, "error_code": "timeout", "error_message": "not terminal"}
+            )
 
     avg_ms = (sum(durations_ms) / len(durations_ms)) if durations_ms else 0.0
     p95_ms = percentile(durations_ms, 0.95)
@@ -70,7 +79,11 @@ def summarize(uploaded: list[Uploaded], last_items: list[dict], terminal_at: dic
         "uploaded": len(uploaded),
         "indexed_count": success,
         "error_count": failure,
-        "timings": {"avg_ms": round(avg_ms, 2), "p95_ms": round(p95_ms, 2), "max_ms": round(max_ms, 2)},
+        "timings": {
+            "avg_ms": round(avg_ms, 2),
+            "p95_ms": round(p95_ms, 2),
+            "max_ms": round(max_ms, 2),
+        },
         "per_extension": per_ext,
         "failures": failures_detail,
     }

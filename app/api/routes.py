@@ -1,11 +1,7 @@
 from __future__ import annotations
 
- 
-
 from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
 
-from app.logging_conf import get_logger
-from app.service import kb_service
 from app.api.models import (
     ChildStatus,
     KBCreateRequest,
@@ -13,6 +9,8 @@ from app.api.models import (
     MonitorChildrenResponse,
     ResourceUploadResponse,
 )
+from app.logging_conf import get_logger
+from app.service import kb_service
 
 router = APIRouter()
 logger = get_logger("api")

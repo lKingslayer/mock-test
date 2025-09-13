@@ -58,7 +58,9 @@ async def run_smoke(
         poll_interval_s=poll_interval_s,
         timeout_s=timeout_s,
     )
-    summary, exit_code = summarize(uploaded=uploaded, last_items=last_items, terminal_at=terminal_at)
+    summary, exit_code = summarize(
+        uploaded=uploaded, last_items=last_items, terminal_at=terminal_at
+    )
     logger.info("runner.summary", extra=summary)
     return exit_code
 

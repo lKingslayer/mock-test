@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import httpx
 
@@ -48,7 +48,11 @@ async def upload_one(client: httpx.AsyncClient, kb_id: str, path: Path) -> Uploa
     r = await client.post(f"/knowledge_bases/{kb_id}/resources", files=files)
     r.raise_for_status()
     data = r.json()
-    return Uploaded(token=data["resource_id"], path=data["resource_path"], created_at_ms=data["created_at"])
+    return Uploaded(
+        token=data["resource_id"],
+        path=data["resource_path"],
+        created_at_ms=data["created_at"],
+    )
 
 
 async def upload_all(base_url: str, kb_id: str, files: Iterable[Path]) -> list[Uploaded]:
