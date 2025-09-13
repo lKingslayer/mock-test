@@ -4,15 +4,15 @@ import os
 import time
 from uuid import uuid4
 
-from ..logging_conf import get_logger
 from ..domain.paths import normalize_resource_path
+from ..domain.status import Status, compute_status
 from ..domain.tokens import (
-    TokenError,
     decode_resource_token,
     encode_resource_token,
     get_seed_from_env,
+    TokenError,
 )
-from ..domain.status import Status, compute_status
+from ..logging_conf import get_logger
 
 logger = get_logger("service.kb")
 
