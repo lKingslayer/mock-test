@@ -149,7 +149,7 @@ flowchart LR
   end
 
   subgraph API[FastAPI App]
-    H[/GET /health]
+    H[/GET /health/]
     R1[POST /knowledge_bases]
     R2[POST /knowledge_bases/:kb/resources]
     R3[GET /knowledge_bases/:kb/resources/children]
