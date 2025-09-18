@@ -148,13 +148,14 @@ flowchart LR
     CLI[CLI / curl / runner]
   end
 
-  %% API with internal layers nested
-  subgraph API[FastAPI App]
-    H[/GET /health/]
-    R1[POST /knowledge_bases]
-    R2[POST /knowledge_bases/:kb/resources]
-    R3[GET /knowledge_bases/:kb/resources/children]
-    R4[DELETE /knowledge_bases/:kb]
+  subgraph Server[Server]
+    subgraph API[API (FastAPI)]
+      H[/GET /health/]
+      R1[POST /knowledge_bases]
+      R2[POST /knowledge_bases/:kb/resources]
+      R3[GET /knowledge_bases/:kb/resources/children]
+      R4[DELETE /knowledge_bases/:kb]
+    end
 
     subgraph Service[Service Layer]
       S1[kb_service.create_kb]
@@ -162,14 +163,14 @@ flowchart LR
       S3[kb_service.list_children]
     end
 
-    subgraph Domain[Domain Utilities]
+    subgraph Domain[Domain]
       D1[paths.normalize_resource_path]
       D2[tokens.encode/decode_resource_token]
       D3[status.compute_status]
     end
   end
 
-  %% Flows (always via API, never direct client→service/domain)
+  %% Flows (client only talks to API)
   CLI -->|HTTP JSON only| H
 
   CLI -->|HTTP JSON| R1
