@@ -11,6 +11,7 @@ A FastAPI-based knowledge base management system that allows you to create knowl
 - **Comprehensive Testing**: Automated smoke tests with fixture generation
 - **Retries & Resilience**: Runner tolerates per-file upload failures and retries transient errors
 - **Structured JSON Logs**: Consistent logging for both server and runner
+- **Clean Client-Server Boundary**: Runner interacts with the API strictly over HTTP
 - **CI/CD Pipeline**: GitHub Actions workflow for lint + smoke testing
 - **Multiple File Formats**: Support for DOCX, PDF, PPTX, XLSX, TXT, MD, CSV, HTML, JSON, PNG
 
@@ -118,6 +119,7 @@ mock_task/
 │   ├── types.py           # Dataclasses and custom exceptions
 │   ├── utils.py           # Small helpers (percentiles, summaries)
 │   └── smoke.py           # Orchestrates the end-to-end flow
+│   └── logging_conf.py    # Runner-only JSON logging (decoupled from server)
 ├── tools/                  # Utility scripts
 │   └── fixtures.py         # Generate test fixtures
 ├── .github/workflows/      # CI/CD
@@ -126,6 +128,15 @@ mock_task/
 ├── test.py                # Basic test script
 └── README.md              # This file
 ```
+
+## Architecture & Boundaries
+
+- The runner is a separate client that communicates with the FastAPI app only via HTTP (using `httpx`). It does not import any modules from `app.*`.
+- The server encapsulates all business logic and normalization:
+  - `resource_path` normalization occurs server-side in `app/service/kb_service.py` via `app/domain/paths.py`.
+- Logging is implemented separately on both sides:
+  - Server uses `app/logging_conf.py`.
+  - Runner uses `runner/logging_conf.py`.
 
 ## Mermaid Diagram 
 
@@ -138,7 +149,7 @@ flowchart LR
   end
 
   subgraph API[FastAPI App]
-    H[/GET /health/]
+    H[/GET /health]
     R1[POST /knowledge_bases]
     R2[POST /knowledge_bases/:kb/resources]
     R3[GET /knowledge_bases/:kb/resources/children]
@@ -158,7 +169,7 @@ flowchart LR
   end
 
   %% Flows
-  CLI -->|HTTP JSON| H
+  CLI -->|HTTP JSON only| H
   CLI --> R1 --> S1 -->|kb_id| CLI
   CLI --> R2 --> S2 --> D1 --> D2 -->|resource token| CLI
   CLI --> R3 --> S3 --> D2 --> D3 -->|statuses| CLI

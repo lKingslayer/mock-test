@@ -15,9 +15,9 @@ import sys
 import time
 from pathlib import Path
 
-from app.logging_conf import get_logger, setup_logging
 from runner.cli import parse_args
 from runner.client import create_kb, poll_children, upload_all, wait_for_health
+from runner.logging_conf import get_logger, setup_logging
 from runner.types import Uploaded, now_ms
 from runner.utils import summarize, validate_and_collect_fixtures
 

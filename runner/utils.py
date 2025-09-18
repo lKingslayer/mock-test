@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.domain.paths import extension
 from runner.types import Uploaded
 
 """Utility helpers for the smoke runner.
@@ -53,7 +52,8 @@ def summarize(
 
     items_by_id = {it["resource_id"]: it for it in (last_items or [])}
     for u in uploaded:
-        ext = extension(u.path)
+        # Infer extension from path without importing server code
+        ext = (Path(u.path).suffix.lstrip(".").lower())
         per_ext.setdefault(ext, {"indexed": 0, "error": 0})
         term_ms = terminal_at.get(u.token)
         it = items_by_id.get(u.token, {})

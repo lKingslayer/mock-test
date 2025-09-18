@@ -5,8 +5,7 @@ from pathlib import Path
 
 import httpx
 
-from app.domain.paths import normalize_resource_path
-from app.logging_conf import get_logger
+from runner.logging_conf import get_logger
 from runner.types import CreateKBError, PollError, SmokeError, Uploaded, UploadError
 
 logger = get_logger("runner.client")
@@ -81,7 +80,7 @@ async def upload_one(
     - Retries a couple of times on transient errors
     - Logs success and retry attempts with the normalized path
     """
-    rp = normalize_resource_path(str(path))
+    rp = str(path)
     files = {
         "resource_type": (None, "file"),
         "resource_path": (None, rp),
