@@ -174,15 +174,15 @@ flowchart LR
 
   CLI -->|HTTP JSON| R1
   R1 --> S1 --> R1
-  R1 -->|JSON {knowledge_base_id}| CLI
+  R1 -->|JSON knowledge_base_id| CLI
 
   CLI -->|multipart/form-data| R2
   R2 --> S2 --> D1 --> D2 --> S2 --> R2
-  R2 -->|JSON {resource_id, resource_path, status}| CLI
+  R2 -->|JSON resource_id, resource_path, status| CLI
 
   CLI -->|HTTP JSON| R3
   R3 --> S3 --> D2 --> D3 --> S3 --> R3
-  R3 -->|JSON {items: [...]}| CLI
+  R3 -->|JSON items array| CLI
 
   CLI -->|HTTP| R4
   R4 --> S1
