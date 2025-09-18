@@ -148,32 +148,44 @@ flowchart LR
     CLI[CLI / curl / runner]
   end
 
+  %% API with internal layers nested
   subgraph API[FastAPI App]
     H[/GET /health/]
     R1[POST /knowledge_bases]
     R2[POST /knowledge_bases/:kb/resources]
     R3[GET /knowledge_bases/:kb/resources/children]
     R4[DELETE /knowledge_bases/:kb]
+
+    subgraph Service[Service Layer]
+      S1[kb_service.create_kb]
+      S2[kb_service.upload_resource]
+      S3[kb_service.list_children]
+    end
+
+    subgraph Domain[Domain Utilities]
+      D1[paths.normalize_resource_path]
+      D2[tokens.encode/decode_resource_token]
+      D3[status.compute_status]
+    end
   end
 
-  subgraph Service[Service Layer]
-    S1[kb_service.create_kb]
-    S2[kb_service.upload_resource]
-    S3[kb_service.list_children]
-  end
-
-  subgraph Domain[Domain Utilities]
-    D1[paths.normalize_resource_path]
-    D2[tokens.encode/decode_resource_token]
-    D3[status.compute_status]
-  end
-
-  %% Flows
+  %% Flows (always via API, never direct client→service/domain)
   CLI -->|HTTP JSON only| H
-  CLI --> R1 --> S1 -->|kb_id| CLI
-  CLI --> R2 --> S2 --> D1 --> D2 -->|resource token| CLI
-  CLI --> R3 --> S3 --> D2 --> D3 -->|statuses| CLI
-  CLI --> R4 --> S1
+
+  CLI -->|HTTP JSON| R1
+  R1 --> S1 --> R1
+  R1 -->|JSON {knowledge_base_id}| CLI
+
+  CLI -->|multipart/form-data| R2
+  R2 --> S2 --> D1 --> D2 --> S2 --> R2
+  R2 -->|JSON {resource_id, resource_path, status}| CLI
+
+  CLI -->|HTTP JSON| R3
+  R3 --> S3 --> D2 --> D3 --> S3 --> R3
+  R3 -->|JSON {items: [...]}| CLI
+
+  CLI -->|HTTP| R4
+  R4 --> S1
 ```
 
 Tip: Paste the Mermaid block into Mermaid Live (`https://mermaid.live`) or Excalidraw (`https://excalidraw.com`) to tweak spacing, colors, and export as SVG/PNG.
